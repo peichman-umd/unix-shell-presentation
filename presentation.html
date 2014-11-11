@@ -1,0 +1,831 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Unix Command Line Filters</title>
+  <style type="text/css">
+    body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: #222;
+  background-color: #f7f7f7;
+  font-size: 100%;
+}
+
+.slide {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 0; right: 0;
+}
+
+.slide-content {
+  width: 800px;
+  height: 600px;
+  overflow: hidden;
+  margin: 80px auto 0 auto;
+  padding: 30px;
+
+  font-weight: 200;
+  font-size: 200%;
+  line-height: 1.375;
+}
+
+.controls {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+}
+
+.arrow {
+  width: 0; height: 0;
+  border: 30px solid #333;
+  float: left;
+  margin-right: 30px;
+
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.prev {
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+
+  border-left-width: 0;
+  border-right-width: 50px;
+}
+
+.next {
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  border-right-color: transparent;
+
+  border-left-width: 50px;
+  border-right-width: 0;
+}
+
+.prev:hover {
+  border-right-color: #888;
+  cursor: pointer;
+}
+
+.next:hover {
+  border-left-color: #888;
+  cursor: pointer;
+}
+
+h1 {
+  font-size: 300%;
+  line-height: 1.2;
+  text-align: center;
+  margin: 170px 0 0;
+}
+
+h2 {
+  font-size: 100%;
+  line-height: 1.2;
+  margin: 5px 0;
+  text-align: center;
+  font-weight: 200;
+}
+
+h3 {
+  font-size: 140%;
+  line-height: 1.2;
+  border-bottom: 1px solid #aaa;
+  margin: 0;
+  padding-bottom: 15px;
+}
+
+ul {
+  padding: 20px 0 0 60px;
+  font-weight: 200;
+  line-height: 1.375;
+}
+
+.author h1 {
+  font-size: 170%;
+  font-weight: 200;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.author h3 {
+  font-weight: 100;
+  text-align: center;
+  font-size: 95%;
+  border: none;
+}
+
+a {
+  text-decoration: none;
+  color: #44a4dd;
+}
+
+a:hover {
+  color: #66b5ff;
+}
+
+pre {
+  font-size: 60%;
+  line-height: 1.3;
+}
+
+.progress {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+
+.progress-bar {
+  width: 0%;
+  height: 3px;
+  background-color: #b4b4b4;
+
+  -webkit-transition: width 0.05s ease-out;
+  -moz-transition: width 0.05s ease-out;
+  -o-transition: width 0.05s ease-out;
+  transition: width 0.05s ease-out;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 850px) {
+
+  body {
+    font-size: 70%;
+  }
+
+  .slide-content {
+    width: auto;
+  }
+
+  img {
+    width: 100%;
+  }
+
+  h1 {
+    margin-top: 120px;
+  }
+
+  .prev, .prev:hover {
+    border-right-color: rgba(135, 135, 135, 0.5);
+  }
+
+  .next, .next:hover {
+    border-left-color: rgba(135, 135, 135, 0.5);
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 50%;
+    overflow: hidden;
+  }
+
+  .slide-content {
+    padding: 10px;
+    margin-top: 10px;
+    height: 340px;
+  }
+
+  h1 {
+    margin-top: 50px;
+  }
+
+  ul {
+    padding-left: 25px;
+  }
+}
+
+@media print {
+  * {
+    -webkit-print-color-adjust: exact;
+  }
+
+  @page {
+    size: letter;
+  }
+
+  .hidden {
+    display: inline;
+  }
+
+  html {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  body {
+    margin: 0 auto !important;
+    border: 0;
+    padding: 0;
+    float: none !important;
+    overflow: visible;
+    background: none !important;
+    font-size: 52%;
+  }
+
+  .progress, .controls {
+    display: none;
+  }
+
+  .slide {
+    position: static;
+  }
+
+  .slide-content {
+    border: 1px solid #222;
+    margin-top: 0;
+    margin-bottom: 40px;
+    height: 3.5in;
+    overflow: visible;
+  }
+
+  .slide:nth-child(even) {
+    /* 2 slides per page */
+    page-break-before: always;
+  }
+}
+
+/*
+github.com style (c) Vasily Polovnyov <vast@whiteants.net>
+*/
+
+code, pre {
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  overflow: auto;
+  padding: 6px 10px;
+}
+
+code {
+  padding: 0 5px;
+}
+
+pre>code {
+  margin: 0; padding: 0;
+  border: none;
+  background: transparent;
+}
+
+pre .comment,
+pre .template_comment,
+pre .diff .header,
+pre .javadoc {
+  color: #998;
+  font-style: italic
+}
+
+pre .keyword,
+pre .css .rule .keyword,
+pre .winutils,
+pre .javascript .title,
+pre .nginx .title,
+pre .subst,
+pre .request,
+pre .status {
+  color: #333;
+  font-weight: bold
+}
+
+pre .number,
+pre .hexcolor,
+pre .ruby .constant {
+  color: #099;
+}
+
+pre .string,
+pre .tag .value,
+pre .phpdoc,
+pre .tex .formula {
+  color: #d14
+}
+
+pre .title,
+pre .id {
+  color: #900;
+  font-weight: bold
+}
+
+pre .javascript .title,
+pre .lisp .title,
+pre .clojure .title,
+pre .subst {
+  font-weight: normal
+}
+
+pre .class .title,
+pre .haskell .type,
+pre .vhdl .literal,
+pre .tex .command {
+  color: #458;
+  font-weight: bold
+}
+
+pre .tag,
+pre .tag .title,
+pre .rules .property,
+pre .django .tag .keyword {
+  color: #000080;
+  font-weight: normal
+}
+
+pre .attribute,
+pre .variable,
+pre .lisp .body {
+  color: #008080
+}
+
+pre .regexp {
+  color: #009926
+}
+
+pre .class {
+  color: #458;
+  font-weight: bold
+}
+
+pre .symbol,
+pre .ruby .symbol .string,
+pre .lisp .keyword,
+pre .tex .special,
+pre .prompt {
+  color: #990073
+}
+
+pre .built_in,
+pre .lisp .title,
+pre .clojure .built_in {
+  color: #0086b3
+}
+
+pre .preprocessor,
+pre .pi,
+pre .doctype,
+pre .shebang,
+pre .cdata {
+  color: #999;
+  font-weight: bold
+}
+
+pre .deletion {
+  background: #fdd
+}
+
+pre .addition {
+  background: #dfd
+}
+
+pre .diff .change {
+  background: #0086b3
+}
+
+pre .chunk {
+  color: #aaa
+}
+
+
+  </style>
+</head>
+<body>
+    <div class="progress">
+    <div class="progress-bar"></div>
+  </div>
+
+  <div class="slide" id="slide-1">
+    <section class="slide-content"><h1 id="think-in-filters">Think in Filters</h1>
+<h2 id="introduction-to-the-unix-command-line">Introduction to the Unix Command Line</h2>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-2">
+    <section class="slide-content"><h3 id="command-line-programs">Command Line Programs</h3>
+<ul>
+<li>Arguments</li>
+<li>&quot;Connectors&quot;</li>
+<li>Environment Variables</li>
+</ul>
+<!--
+
+This includes the programs that come with the OS, software you install, as well
+as scripts that you write. A lot of Unix software is actually scripts.
+
+/--></section>
+  </div>
+  <div class="slide hidden" id="slide-3">
+    <section class="slide-content"><h3 id="command-line-programs">Command Line Programs</h3>
+<p><img src="program-connections-trans.png" alt=""></p>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-4">
+    <section class="slide-content"><h3 id="arguments">Arguments</h3>
+<ul>
+<li>Additional settings given after the program name</li>
+<li>In Bash, these become the variables <code>$1</code>, <code>$2</code>, etc.</li>
+<li>Like knobs, dials, and switches for your program</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-5">
+    <section class="slide-content"><h3 id="connectors">Connectors</h3>
+<ul>
+<li>Every program has 3 default connectors<ul>
+<li>STDIN (0)</li>
+<li>STDOUT (1)</li>
+<li>STDERR (2)</li>
+</ul>
+</li>
+</ul>
+<!--
+
+Technically, these are "file descriptors", since on Unix, everything is a file.
+Even your console.
+
+/--></section>
+  </div>
+  <div class="slide hidden" id="slide-6">
+    <section class="slide-content"><h3 id="default-connectors">Default Connectors</h3>
+<ul>
+<li>Normally connected to your console:<ul>
+<li>STDIN from keyboard</li>
+<li>STDOUT and STDERR to screen</li>
+</ul>
+</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-7">
+    <section class="slide-content"><h3 id="input-output-redirection-with-files">Input/Output Redirection with Files</h3>
+<ul>
+<li>You can also connect them to files:<ul>
+<li>STDIN: <code>command &lt; input.txt</code></li>
+<li>STDOUT: <code>command &gt; output.txt</code></li>
+<li>STDOUT (append): <code>command &gt;&gt; log.txt</code></li>
+<li>STDERR: <code>command 2&gt; errors.txt</code></li>
+<li>STDERR (append): <code>command 2&gt;&gt; error_log.txt</code></li>
+</ul>
+</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-8">
+    <section class="slide-content"><h3 id="input-output-redirection-with-files">Input/Output Redirection with Files</h3>
+<ul>
+<li>All at the same time:</li>
+<li><code>command &lt; input.txt &gt; output.txt 2&gt; errors.txt</code></li>
+</ul>
+<!--
+
+However, it is a common Unix idiom to specify the input filename (or filenames)
+as arguments on the command line. But a well-behaved Unix program will also
+accept its input on STDIN.
+
+/--></section>
+  </div>
+  <div class="slide hidden" id="slide-9">
+    <section class="slide-content"><h3 id="connecting-programs">Connecting Programs</h3>
+<ul>
+<li>Pipes</li>
+<li>Connect one program&#39;s STDOUT to the next program&#39;s STDIN</li>
+<li><code>ls | wc -l</code></li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-10">
+    <section class="slide-content"><h3 id="environment-variables">Environment Variables</h3>
+<ul>
+<li>Set: <code>VARIABLE=value</code></li>
+<li>Get: <code>$VARIABLE</code></li>
+<li>Can control the behavior of commands and programs</li>
+<li>Scripts can use them to find out about the environment they are running in
+(e.g., <code>$HOME</code>, <code>$PWD</code>)</li>
+<li>Use them to store intermediate values in your scripts</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-11">
+    <section class="slide-content"><h3 id="the-unix-way">The Unix Way</h3>
+<ul>
+<li>Do one thing and do it well</li>
+<li>Break a complex task up into simpler pieces</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-12">
+    <section class="slide-content"><h3 id="-almost-everything-is-a-filter">(Almost) Everything is a Filter</h3>
+<ul>
+<li>Build programs as filters<ol>
+<li>Read STDIN</li>
+<li>Process</li>
+<li>Write to STDOUT</li>
+</ol>
+</li>
+</ul>
+<!--
+
+The exception to (1) is when your program is getting its input from an external
+source, like the filesystem in the case of ls or find.
+
+There are also some exceptions to (3), such as sendmail or lp, where the data is
+handed off to the network or another device rather than being written to STDOUT.
+
+/--></section>
+  </div>
+  <div class="slide hidden" id="slide-13">
+    <section class="slide-content"><h3 id="development-strategies">Development Strategies</h3>
+<ul>
+<li>Build pipes on the command line</li>
+<li>Transfer them to a script once you have them working</li>
+<li>Look for existing tools</li>
+<li>Think of pipes when you hear &quot;and&quot;</li>
+</ul>
+<!--
+
+If you find yourself describing a problem by saying "do A, and then do B", it is
+probably best to look for (or write) two separate programs, one that daoes A and
+one that does B. Especially if one or the other of those is a generic task, like
+sorting, counting, etc.
+
+Even if your original problem statement doesn't contain "and then" statements,
+it may help you approach the problem if you rephrase it that way. Compare "count
+all index.html files" to "find all the index.html files, and then count that
+list". The second form suggests a simple pipe command, "find . -name index.html
+| wc -l".
+
+/--></section>
+  </div>
+  <div class="slide hidden" id="slide-14">
+    <section class="slide-content"><h3 id="more-complex-problems">More Complex Problems</h3>
+<ul>
+<li>Use a scripting language to write the necessary piece</li>
+<li>Awk, Perl, Python, Ruby</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-15">
+    <section class="slide-content"><h3 id="parsing-data-formats">Parsing Data Formats</h3>
+<ul>
+<li>Parsing of more complicated data formats<ul>
+<li>Sometimes quick-and-dirty is enough</li>
+<li>Sometimes you want a robust solution</li>
+</ul>
+</li>
+<li>Write your program using a library for your scripting language of choice</li>
+<li>Consider making the program as simple as possible</li>
+<li>Use existing tools to handle common tasks</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-16">
+    <section class="slide-content"><h3 id="input">Input</h3>
+<ul>
+<li>List the contents of a directory: <code>ls</code></li>
+<li>Finding files or directories: <code>find</code></li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-17">
+    <section class="slide-content"><h3 id="processing">Processing</h3>
+<ul>
+<li>Sorting: <code>sort</code></li>
+<li>Find unique occurances: <code>sort | uniq</code></li>
+<li>Filtering: <code>grep</code></li>
+<li>Splitting input into columns: <code>cut</code></li>
+<li>Search-and-replace: <code>sed</code></li>
+<li>Counting: <code>wc</code></li>
+<li>Pretty-print XML: <code>xmllint --format</code></li>
+<li>Beginning or end of input: <code>head</code>, <code>tail</code></li>
+<li>Convert a list to arguments: <code>xargs</code></li>
+</ul>
+<!--
+
+Think of xargs as "rotating" your input; it takes the list of things it gets on
+its STDIN and "rotates" those into the argument positions of another command
+
+/--></section>
+  </div>
+  <div class="slide hidden" id="slide-18">
+    <section class="slide-content"><h3 id="processing-csv">Processing CSV</h3>
+<ul>
+<li>csvkit: <a href="https://csvkit.readthedocs.org/en/0.9.0/">https://csvkit.readthedocs.org/en/0.9.0/</a><ul>
+<li>Split by column: <code>csvcut</code></li>
+<li>Search/filter: <code>csvgrep</code></li>
+<li>Sort: <code>csvsort</code></li>
+<li>Combine: <code>csvjoin</code></li>
+<li>Pretty output: <code>csvlook</code></li>
+<li>...and more</li>
+</ul>
+</li>
+<li>It is also a Python library</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-19">
+    <section class="slide-content"><h3 id="output">Output</h3>
+<ul>
+<li>Paging: <code>less</code></li>
+<li>Source code highlighting: <code>pygmentize</code></li>
+</ul>
+<!--
+
+These (mostly) only make sense when writing to the screen. Although pygments
+does have an HTML output mode which would make sense to write to a file. This
+just goes to show that good programs in Unix are filters, even unexpected ones.
+
+You may need to install pygmentize by running `pip pygments`, or installing the
+python-pygments package for your OS.
+
+/--></section>
+  </div>
+  <div class="slide hidden" id="slide-20">
+    <section class="slide-content"><h3 id="finding-more-tools">Finding More Tools</h3>
+<ul>
+<li>Search: <code>apropos &quot;search term&quot;</code></li>
+<li>Help: <code>man command</code></li>
+<li>Google</li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-21">
+    <section class="slide-content"><h3 id="further-reading">Further Reading</h3>
+<ul>
+<li><a href="http://radar.oreilly.com/2011/04/data-hand-tools.html">Data Hand Tools</a></li>
+<li><a href="http://perl.plover.com/yak/commands/">Internals of Familiar Unix Commands</a></li>
+<li><a href="http://www.catb.org/esr/writings/taoup/html/ch01s06.html">Basics of the Unix Philosophy</a></li>
+</ul>
+</section>
+  </div>
+  <div class="slide hidden" id="slide-22">
+    <section class="slide-content"><div class="author">
+  <h1 class="name">Peter Eichman</h1>
+    <h3 class="email">
+      <a href="mailto:peichman@umd.edu">peichman@umd.edu</a>
+    </h3>
+</div>
+</section>
+  </div>
+
+  <div class="controls">
+    <div class="arrow prev"></div>
+    <div class="arrow next"></div>
+  </div>
+
+
+  <script type="text/javascript">
+    /**
+ * Returns the current page number of the presentation.
+ */
+function currentPosition() {
+  return parseInt(document.querySelector('.slide:not(.hidden)').id.slice(6));
+}
+
+
+/**
+ * Navigates forward n pages
+ * If n is negative, we will navigate in reverse
+ */
+function navigate(n) {
+  var position = currentPosition();
+  var numSlides = document.getElementsByClassName('slide').length;
+
+  /* Positions are 1-indexed, so we need to add and subtract 1 */
+  var nextPosition = (position - 1 + n) % numSlides + 1;
+
+  /* Normalize nextPosition in-case of a negative modulo result */
+  nextPosition = (nextPosition - 1 + numSlides) % numSlides + 1;
+
+  document.getElementById('slide-' + position).classList.add('hidden');
+  document.getElementById('slide-' + nextPosition).classList.remove('hidden');
+
+  updateProgress();
+  updateURL();
+  updateTabIndex();
+}
+
+
+/**
+ * Updates the current URL to include a hashtag of the current page number.
+ */
+function updateURL() {
+  window.history.replaceState({} , null, '#' + currentPosition());
+}
+
+
+/**
+ * Sets the progress indicator.
+ */
+function updateProgress() {
+  var progressBar = document.querySelector('.progress-bar');
+
+  if (progressBar !== null) {
+    var numSlides = document.getElementsByClassName('slide').length;
+    var position = currentPosition() - 1;
+    var percent = (numSlides === 1) ? 100 : 100 * position / (numSlides - 1);
+    progressBar.style.width = percent.toString() + '%';
+  }
+}
+
+
+/**
+ * Removes tabindex property from all links on the current slide, sets
+ * tabindex = -1 for all links on other slides. Prevents slides from appearing
+ * out of control.
+ */
+function updateTabIndex() {
+  var allLinks = document.querySelectorAll('.slide a');
+  var position = currentPosition();
+  var currentPageLinks = document.getElementById('slide-' + position).querySelectorAll('a');
+  var i;
+
+  for (i = 0; i < allLinks.length; i++) {
+    allLinks[i].setAttribute('tabindex', -1);
+  }
+
+  for (i = 0; i < currentPageLinks.length; i++) {
+    currentPageLinks[i].removeAttribute('tabindex');
+  }
+}
+
+/**
+ * Determines whether or not we are currently in full screen mode
+ */
+function isFullScreen() {
+  return document.fullscreenElement ||
+         document.mozFullScreenElement ||
+         document.webkitFullscreenElement ||
+         document.msFullscreenElement;
+}
+
+/**
+ * Toggle fullScreen mode on document element.
+ * Works on chrome (>= 15), firefox (>= 9), ie (>= 11), opera(>= 12.1), safari (>= 5).
+ */
+function toggleFullScreen() {
+  /* Convenient renames */
+  var docElem = document.documentElement;
+  var doc = document;
+
+  docElem.requestFullscreen =
+      docElem.requestFullscreen ||
+      docElem.msRequestFullscreen ||
+      docElem.mozRequestFullScreen ||
+      docElem.webkitRequestFullscreen.bind(docElem, Element.ALLOW_KEYBOARD_INPUT);
+
+  doc.exitFullscreen =
+      doc.exitFullscreen ||
+      doc.msExitFullscreen ||
+      doc.mozCancelFullScreen ||
+      doc.webkitExitFullscreen;
+
+  isFullScreen() ? doc.exitFullscreen() : docElem.requestFullscreen();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  // Update the tabindex to prevent weird slide transitioning
+  updateTabIndex();
+
+  // If the location hash specifies a page number, go to it.
+  var page = window.location.hash.slice(1);
+  if (page) {
+    navigate(parseInt(page) - 1);
+  }
+
+  document.onkeydown = function (e) {
+    var kc = e.keyCode;
+
+    // left, down, H, J, backspace, PgUp - BACK
+    // up, right, K, L, space, PgDn - FORWARD
+    // enter - FULLSCREEN
+    if (kc === 37 || kc === 40 || kc === 8 || kc === 72 || kc === 74 || kc === 33) {
+      navigate(-1);
+    } else if (kc === 38 || kc === 39 || kc === 32 || kc === 75 || kc === 76 || kc === 34) {
+      navigate(1);
+    } else if (kc === 13) {
+      toggleFullScreen();
+    }
+  };
+
+  if (document.querySelector('.next') && document.querySelector('.prev')) {
+    document.querySelector('.next').onclick = function (e) {
+      e.preventDefault();
+      navigate(1);
+    };
+
+    document.querySelector('.prev').onclick = function (e) {
+      e.preventDefault();
+      navigate(-1);
+    };
+  }
+});
+
+
+  </script>
+</body>
+</html>
